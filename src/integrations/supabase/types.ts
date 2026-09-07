@@ -14,7 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      generations: {
+        Row: {
+          aspect_ratio: string
+          camera: string | null
+          created_at: string
+          credits: number
+          device_id: string
+          duration: number
+          enhanced_prompt: string | null
+          error_message: string | null
+          id: string
+          lighting: string | null
+          mode: string
+          model_tier: string
+          negative_prompt: string | null
+          prompt: string
+          provider: string
+          provider_job_id: string | null
+          resolution: string
+          status: string
+          style: string | null
+          title: string | null
+          updated_at: string
+          video_path: string | null
+        }
+        Insert: {
+          aspect_ratio?: string
+          camera?: string | null
+          created_at?: string
+          credits?: number
+          device_id: string
+          duration?: number
+          enhanced_prompt?: string | null
+          error_message?: string | null
+          id?: string
+          lighting?: string | null
+          mode?: string
+          model_tier?: string
+          negative_prompt?: string | null
+          prompt: string
+          provider?: string
+          provider_job_id?: string | null
+          resolution?: string
+          status?: string
+          style?: string | null
+          title?: string | null
+          updated_at?: string
+          video_path?: string | null
+        }
+        Update: {
+          aspect_ratio?: string
+          camera?: string | null
+          created_at?: string
+          credits?: number
+          device_id?: string
+          duration?: number
+          enhanced_prompt?: string | null
+          error_message?: string | null
+          id?: string
+          lighting?: string | null
+          mode?: string
+          model_tier?: string
+          negative_prompt?: string | null
+          prompt?: string
+          provider?: string
+          provider_job_id?: string | null
+          resolution?: string
+          status?: string
+          style?: string | null
+          title?: string | null
+          updated_at?: string
+          video_path?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
