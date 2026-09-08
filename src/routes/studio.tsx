@@ -142,8 +142,9 @@ function Studio() {
           duration: settings.duration,
         },
       });
+      setPreEnhance(settings.prompt);
       set("prompt", res.enhanced);
-      toast.success("Prompt enhanced");
+      toast.success("Prompt enhanced — your original is kept");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't enhance that prompt.");
     } finally {
