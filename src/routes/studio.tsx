@@ -220,6 +220,20 @@ function Studio() {
               )}
               Enhance prompt
             </Button>
+            {preEnhance !== null && (
+              <Button
+                variant="ghost"
+                className="mt-2 w-full"
+                onClick={() => {
+                  set("prompt", preEnhance);
+                  setPreEnhance(null);
+                  toast.success("Original description restored");
+                }}
+              >
+                <Undo2 className="mr-1 size-4" /> Undo enhance
+              </Button>
+            )}
+
 
             <Label htmlFor="negative" className="mt-5 block">
               Avoid (optional)
