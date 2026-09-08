@@ -38,9 +38,10 @@ import {
 } from "@/lib/videonova";
 
 export const Route = createFileRoute("/studio")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    template: typeof search.template === "string" ? search.template : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { template?: string } => {
+    const t = search["template"];
+    return typeof t === "string" ? { template: t } : {};
+  },
   head: () => ({
     meta: [
       { title: "AI Video Studio — VIDEONOVA AI" },
