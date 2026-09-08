@@ -80,6 +80,7 @@ function Studio() {
   const deviceId = useDeviceId();
   const [settings, setSettings] = useState<VideoSettings>(DEFAULT_SETTINGS);
   const [enhancing, setEnhancing] = useState(false);
+  const [preEnhance, setPreEnhance] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [job, setJob] = useState<GenerationView | null>(null);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
