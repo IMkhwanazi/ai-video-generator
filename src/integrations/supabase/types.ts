@@ -24,6 +24,7 @@ export type Database = {
           duration: number
           enhanced_prompt: string | null
           error_message: string | null
+          final_prompt: string | null
           id: string
           lighting: string | null
           mode: string
@@ -48,6 +49,7 @@ export type Database = {
           duration?: number
           enhanced_prompt?: string | null
           error_message?: string | null
+          final_prompt?: string | null
           id?: string
           lighting?: string | null
           mode?: string
@@ -72,6 +74,7 @@ export type Database = {
           duration?: number
           enhanced_prompt?: string | null
           error_message?: string | null
+          final_prompt?: string | null
           id?: string
           lighting?: string | null
           mode?: string
