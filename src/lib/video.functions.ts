@@ -263,6 +263,7 @@ export const getGeneration = createServerFn({ method: "POST" })
       status,
       title: (row.title as string | null) ?? "Untitled video",
       prompt: row.prompt as string,
+      finalPrompt: (row.final_prompt as string | null) ?? null,
       duration: row.duration as number,
       aspectRatio: row.aspect_ratio as string,
       resolution: row.resolution as string,
