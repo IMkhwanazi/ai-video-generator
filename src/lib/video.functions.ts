@@ -148,6 +148,7 @@ export const createGeneration = createServerFn({ method: "POST" })
           device_id: data.deviceId,
           title: data.prompt.slice(0, 70),
           prompt: data.prompt,
+          final_prompt: finalPrompt,
           negative_prompt: data.negativePrompt || null,
           mode: data.mode,
           duration: data.duration,
