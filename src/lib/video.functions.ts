@@ -100,9 +100,28 @@ export const createGeneration = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const provider = getVideoProvider();
 
+    // Long descriptions/scripts are distilled into a single scene prompt the model accepts.
+    let promptForModel = data.prompt;
+    if (promptForModel.length > 1800) {
+      try {
+        const condensed = await chat([
+          {
+            role: "system",
+            content:
+              "Distill the user's long description or script into ONE English paragraph (max 160 words) describing a single continuous cinematic scene for an AI video model. Keep the most important concrete details. No lists, no headings, no quotation marks.",
+          },
+          { role: "user", content: promptForModel },
+        ]);
+        if (condensed) promptForModel = condensed;
+        else promptForModel = promptForModel.slice(0, 1800);
+      } catch {
+        promptForModel = promptForModel.slice(0, 1800);
+      }
+    }
+
     try {
       const job = await provider.generateVideo({
-        prompt: data.prompt,
+        prompt: promptForModel,
         negativePrompt: data.negativePrompt,
         duration: data.duration,
         aspectRatio: data.aspectRatio,
