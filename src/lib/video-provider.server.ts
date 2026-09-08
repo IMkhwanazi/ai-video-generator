@@ -15,8 +15,28 @@ export interface GenerateRequest {
   aspectRatio: VideoSettings["aspectRatio"];
   resolution: VideoSettings["resolution"];
   modelTier: ModelTier;
+  style?: string;
+  camera?: string;
+  lighting?: string;
   imageBase64?: string;
   imageMimeType?: string;
+}
+
+/** Deterministic prompt assembly so the same settings always read the same way. */
+export function composeFinalPrompt(req: {
+  prompt: string;
+  style?: string;
+  camera?: string;
+  lighting?: string;
+}) {
+  const base = req.prompt.trim().replace(/\s+$/g, "");
+  const parts: string[] = [];
+  if (req.style) parts.push(`Visual style: ${req.style}`);
+  if (req.camera) parts.push(`Camera: ${req.camera}`);
+  if (req.lighting) parts.push(`Lighting: ${req.lighting}`);
+  if (!parts.length) return base;
+  const tail = `${parts.join(". ")}.`;
+  return base.endsWith(".") ? `${base} ${tail}` : `${base}. ${tail}`;
 }
 
 export type ProviderStatus = "processing" | "completed" | "failed";
