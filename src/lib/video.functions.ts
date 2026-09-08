@@ -10,7 +10,7 @@ import {
 const settingsSchema = z.object({
   deviceId: z.string().min(8).max(64),
   mode: z.enum(["text", "image"]),
-  prompt: z.string().min(4).max(2000),
+  prompt: z.string().min(4).max(24000),
   negativePrompt: z.string().max(500).optional().default(""),
   duration: z.number().int().min(3).max(10),
   aspectRatio: z.enum(["16:9", "9:16"]),
@@ -68,7 +68,7 @@ export const enhancePrompt = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
     z
       .object({
-        prompt: z.string().min(3).max(2000),
+        prompt: z.string().min(3).max(24000),
         style: z.string().max(60).optional(),
         camera: z.string().max(60).optional(),
         lighting: z.string().max(60).optional(),
@@ -82,7 +82,7 @@ export const enhancePrompt = createServerFn({ method: "POST" })
       {
         role: "system",
         content:
-          "You are a cinematography director writing prompts for an AI video model. Expand the user's idea into ONE vivid English paragraph (max 110 words) describing a single continuous scene: subject, environment, camera movement, lens feel, lighting, motion, composition, atmosphere and audio direction. No lists, no headings, no quotation marks, no on-screen text instructions unless the user asked for text.",
+          "You are a cinematography director writing prompts for an AI video model. The user may give a very long description or full script; read all of it and distill it into ONE vivid English paragraph (max 160 words) describing a single continuous scene: subject, environment, camera movement, lens feel, lighting, motion, composition, atmosphere and audio direction. Keep the most important specific details from the user's text. No lists, no headings, no quotation marks, no on-screen text instructions unless the user asked for text.",
       },
       {
         role: "user",
@@ -100,9 +100,28 @@ export const createGeneration = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const provider = getVideoProvider();
 
+    // Long descriptions/scripts are distilled into a single scene prompt the model accepts.
+    let promptForModel = data.prompt;
+    if (promptForModel.length > 1800) {
+      try {
+        const condensed = await chat([
+          {
+            role: "system",
+            content:
+              "Distill the user's long description or script into ONE English paragraph (max 160 words) describing a single continuous cinematic scene for an AI video model. Keep the most important concrete details. No lists, no headings, no quotation marks.",
+          },
+          { role: "user", content: promptForModel },
+        ]);
+        if (condensed) promptForModel = condensed;
+        else promptForModel = promptForModel.slice(0, 1800);
+      } catch {
+        promptForModel = promptForModel.slice(0, 1800);
+      }
+    }
+
     try {
       const job = await provider.generateVideo({
-        prompt: data.prompt,
+        prompt: promptForModel,
         negativePrompt: data.negativePrompt,
         duration: data.duration,
         aspectRatio: data.aspectRatio,
