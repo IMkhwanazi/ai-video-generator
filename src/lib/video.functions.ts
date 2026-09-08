@@ -37,6 +37,16 @@ const BLOCKED = [
   "revenge porn",
 ];
 
+/** Last-resort trim that stops at a sentence boundary instead of mid-word. */
+function trimAtSentence(text: string, max: number) {
+  if (text.length <= max) return text;
+  const slice = text.slice(0, max);
+  const stop = Math.max(slice.lastIndexOf("."), slice.lastIndexOf("!"), slice.lastIndexOf("?"));
+  if (stop > max * 0.5) return slice.slice(0, stop + 1);
+  const space = slice.lastIndexOf(" ");
+  return space > 0 ? slice.slice(0, space) : slice;
+}
+
 function safetyCheck(prompt: string) {
   const lower = prompt.toLowerCase();
   const hit = BLOCKED.find((term) => lower.includes(term));
@@ -82,7 +92,7 @@ export const enhancePrompt = createServerFn({ method: "POST" })
       {
         role: "system",
         content:
-          "You are a cinematography director writing prompts for an AI video model. The user may give a very long description or full script; read all of it and distill it into ONE vivid English paragraph (max 160 words) describing a single continuous scene: subject, environment, camera movement, lens feel, lighting, motion, composition, atmosphere and audio direction. Keep the most important specific details from the user's text. No lists, no headings, no quotation marks, no on-screen text instructions unless the user asked for text.",
+          "You are a cinematography director refining prompts for an AI video model. Rewrite the user's idea as ONE vivid English paragraph describing a single continuous scene. CRITICAL: preserve every concrete detail the user wrote — subjects and their count, names, ages, wardrobe, colours, props, location, time of day, actions, spoken lines, on-screen text and mood — verbatim in meaning. Never replace a specific detail with a generic one, and never invent new subjects, locations or objects. Only add camera, lens, lighting and atmosphere language where the user left it unspecified. No lists, no headings, no quotation marks.",
       },
       {
         role: "user",
@@ -96,28 +106,36 @@ export const createGeneration = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => settingsSchema.parse(input))
   .handler(async ({ data }) => {
     safetyCheck(data.prompt);
-    const { getVideoProvider, ProviderError } = await import("./video-provider.server");
+    const { getVideoProvider, ProviderError, composeFinalPrompt } = await import(
+      "./video-provider.server"
+    );
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const provider = getVideoProvider();
 
-    // Long descriptions/scripts are distilled into a single scene prompt the model accepts.
+    // Very long descriptions/scripts are compressed without losing concrete detail.
     let promptForModel = data.prompt;
-    if (promptForModel.length > 1800) {
+    if (promptForModel.length > 4000) {
       try {
         const condensed = await chat([
           {
             role: "system",
             content:
-              "Distill the user's long description or script into ONE English paragraph (max 160 words) describing a single continuous cinematic scene for an AI video model. Keep the most important concrete details. No lists, no headings, no quotation marks.",
+              "Compress the user's long description or script into ONE continuous English paragraph for an AI video model. CRITICAL: do not remove or invent concrete details — keep every subject and their count, names, ages, wardrobe, colours, props, location, time of day, actions, spoken lines, on-screen text and mood. Remove only repetition, commentary and formatting. No lists, no headings, no quotation marks.",
           },
           { role: "user", content: promptForModel },
         ]);
-        if (condensed) promptForModel = condensed;
-        else promptForModel = promptForModel.slice(0, 1800);
+        promptForModel = condensed || trimAtSentence(promptForModel, 3800);
       } catch {
-        promptForModel = promptForModel.slice(0, 1800);
+        promptForModel = trimAtSentence(promptForModel, 3800);
       }
     }
+
+    const finalPrompt = composeFinalPrompt({
+      prompt: promptForModel,
+      style: data.style,
+      camera: data.camera,
+      lighting: data.lighting,
+    });
 
     try {
       const job = await provider.generateVideo({
@@ -127,6 +145,9 @@ export const createGeneration = createServerFn({ method: "POST" })
         aspectRatio: data.aspectRatio,
         resolution: data.resolution,
         modelTier: data.modelTier,
+        style: data.style,
+        camera: data.camera,
+        lighting: data.lighting,
         ...(data.imageBase64 ? { imageBase64: data.imageBase64 } : {}),
         ...(data.imageMimeType ? { imageMimeType: data.imageMimeType } : {}),
       });
@@ -137,6 +158,7 @@ export const createGeneration = createServerFn({ method: "POST" })
           device_id: data.deviceId,
           title: data.prompt.slice(0, 70),
           prompt: data.prompt,
+          final_prompt: finalPrompt,
           negative_prompt: data.negativePrompt || null,
           mode: data.mode,
           duration: data.duration,
@@ -171,6 +193,7 @@ export interface GenerationView {
   status: GenerationStatus;
   title: string;
   prompt: string;
+  finalPrompt: string | null;
   duration: number;
   aspectRatio: string;
   resolution: string;
@@ -250,6 +273,7 @@ export const getGeneration = createServerFn({ method: "POST" })
       status,
       title: (row.title as string | null) ?? "Untitled video",
       prompt: row.prompt as string,
+      finalPrompt: (row.final_prompt as string | null) ?? null,
       duration: row.duration as number,
       aspectRatio: row.aspect_ratio as string,
       resolution: row.resolution as string,

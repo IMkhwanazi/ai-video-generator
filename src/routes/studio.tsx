@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, Sparkles, Wand2, Download } from "lucide-react";
+import { Loader2, Sparkles, Wand2, Download, Undo2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -80,6 +80,7 @@ function Studio() {
   const deviceId = useDeviceId();
   const [settings, setSettings] = useState<VideoSettings>(DEFAULT_SETTINGS);
   const [enhancing, setEnhancing] = useState(false);
+  const [preEnhance, setPreEnhance] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [job, setJob] = useState<GenerationView | null>(null);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -141,8 +142,9 @@ function Studio() {
           duration: settings.duration,
         },
       });
+      setPreEnhance(settings.prompt);
       set("prompt", res.enhanced);
-      toast.success("Prompt enhanced");
+      toast.success("Prompt enhanced — your original is kept");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't enhance that prompt.");
     } finally {
@@ -218,6 +220,20 @@ function Studio() {
               )}
               Enhance prompt
             </Button>
+            {preEnhance !== null && (
+              <Button
+                variant="ghost"
+                className="mt-2 w-full"
+                onClick={() => {
+                  set("prompt", preEnhance);
+                  setPreEnhance(null);
+                  toast.success("Original description restored");
+                }}
+              >
+                <Undo2 className="mr-1 size-4" /> Undo enhance
+              </Button>
+            )}
+
 
             <Label htmlFor="negative" className="mt-5 block">
               Avoid (optional)
@@ -266,6 +282,16 @@ function Studio() {
             </div>
             {job?.status === "failed" && (
               <p className="mt-3 text-sm text-destructive">{job.error ?? STATUS_COPY.failed}</p>
+            )}
+            {(job?.finalPrompt || settings.prompt.trim()) && (
+              <details className="mt-4 rounded-lg border border-border/60 p-3">
+                <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
+                  Prompt sent to the engine
+                </summary>
+                <p className="mt-2 whitespace-pre-wrap text-xs text-muted-foreground">
+                  {job?.finalPrompt ?? previewPrompt}
+                </p>
+              </details>
             )}
           </section>
 
