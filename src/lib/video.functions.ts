@@ -37,6 +37,16 @@ const BLOCKED = [
   "revenge porn",
 ];
 
+/** Last-resort trim that stops at a sentence boundary instead of mid-word. */
+function trimAtSentence(text: string, max: number) {
+  if (text.length <= max) return text;
+  const slice = text.slice(0, max);
+  const stop = Math.max(slice.lastIndexOf("."), slice.lastIndexOf("!"), slice.lastIndexOf("?"));
+  if (stop > max * 0.5) return slice.slice(0, stop + 1);
+  const space = slice.lastIndexOf(" ");
+  return space > 0 ? slice.slice(0, space) : slice;
+}
+
 function safetyCheck(prompt: string) {
   const lower = prompt.toLowerCase();
   const hit = BLOCKED.find((term) => lower.includes(term));
