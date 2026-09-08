@@ -161,9 +161,7 @@ class LovableVideoProvider implements VideoProvider {
   }
 
   private composePrompt(req: GenerateRequest) {
-    return req.imageBase64
-      ? req.prompt
-      : req.prompt;
+    return composeFinalPrompt(req);
   }
 
   async generateVideo(req: GenerateRequest): Promise<ProviderJob> {
