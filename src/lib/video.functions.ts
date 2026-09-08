@@ -10,7 +10,7 @@ import {
 const settingsSchema = z.object({
   deviceId: z.string().min(8).max(64),
   mode: z.enum(["text", "image"]),
-  prompt: z.string().min(4).max(2000),
+  prompt: z.string().min(4).max(24000),
   negativePrompt: z.string().max(500).optional().default(""),
   duration: z.number().int().min(3).max(10),
   aspectRatio: z.enum(["16:9", "9:16"]),
@@ -68,7 +68,7 @@ export const enhancePrompt = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
     z
       .object({
-        prompt: z.string().min(3).max(2000),
+        prompt: z.string().min(3).max(24000),
         style: z.string().max(60).optional(),
         camera: z.string().max(60).optional(),
         lighting: z.string().max(60).optional(),
