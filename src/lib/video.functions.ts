@@ -183,6 +183,7 @@ export interface GenerationView {
   status: GenerationStatus;
   title: string;
   prompt: string;
+  finalPrompt: string | null;
   duration: number;
   aspectRatio: string;
   resolution: string;
