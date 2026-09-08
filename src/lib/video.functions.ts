@@ -82,7 +82,7 @@ export const enhancePrompt = createServerFn({ method: "POST" })
       {
         role: "system",
         content:
-          "You are a cinematography director writing prompts for an AI video model. Expand the user's idea into ONE vivid English paragraph (max 110 words) describing a single continuous scene: subject, environment, camera movement, lens feel, lighting, motion, composition, atmosphere and audio direction. No lists, no headings, no quotation marks, no on-screen text instructions unless the user asked for text.",
+          "You are a cinematography director writing prompts for an AI video model. The user may give a very long description or full script; read all of it and distill it into ONE vivid English paragraph (max 160 words) describing a single continuous scene: subject, environment, camera movement, lens feel, lighting, motion, composition, atmosphere and audio direction. Keep the most important specific details from the user's text. No lists, no headings, no quotation marks, no on-screen text instructions unless the user asked for text.",
       },
       {
         role: "user",
