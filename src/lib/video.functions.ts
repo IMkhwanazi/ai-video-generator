@@ -96,28 +96,36 @@ export const createGeneration = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => settingsSchema.parse(input))
   .handler(async ({ data }) => {
     safetyCheck(data.prompt);
-    const { getVideoProvider, ProviderError } = await import("./video-provider.server");
+    const { getVideoProvider, ProviderError, composeFinalPrompt } = await import(
+      "./video-provider.server"
+    );
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const provider = getVideoProvider();
 
-    // Long descriptions/scripts are distilled into a single scene prompt the model accepts.
+    // Very long descriptions/scripts are compressed without losing concrete detail.
     let promptForModel = data.prompt;
-    if (promptForModel.length > 1800) {
+    if (promptForModel.length > 4000) {
       try {
         const condensed = await chat([
           {
             role: "system",
             content:
-              "Distill the user's long description or script into ONE English paragraph (max 160 words) describing a single continuous cinematic scene for an AI video model. Keep the most important concrete details. No lists, no headings, no quotation marks.",
+              "Compress the user's long description or script into ONE continuous English paragraph for an AI video model. CRITICAL: do not remove or invent concrete details — keep every subject and their count, names, ages, wardrobe, colours, props, location, time of day, actions, spoken lines, on-screen text and mood. Remove only repetition, commentary and formatting. No lists, no headings, no quotation marks.",
           },
           { role: "user", content: promptForModel },
         ]);
-        if (condensed) promptForModel = condensed;
-        else promptForModel = promptForModel.slice(0, 1800);
+        promptForModel = condensed || trimAtSentence(promptForModel, 3800);
       } catch {
-        promptForModel = promptForModel.slice(0, 1800);
+        promptForModel = trimAtSentence(promptForModel, 3800);
       }
     }
+
+    const finalPrompt = composeFinalPrompt({
+      prompt: promptForModel,
+      style: data.style,
+      camera: data.camera,
+      lighting: data.lighting,
+    });
 
     try {
       const job = await provider.generateVideo({
@@ -127,6 +135,9 @@ export const createGeneration = createServerFn({ method: "POST" })
         aspectRatio: data.aspectRatio,
         resolution: data.resolution,
         modelTier: data.modelTier,
+        style: data.style,
+        camera: data.camera,
+        lighting: data.lighting,
         ...(data.imageBase64 ? { imageBase64: data.imageBase64 } : {}),
         ...(data.imageMimeType ? { imageMimeType: data.imageMimeType } : {}),
       });
