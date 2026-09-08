@@ -283,6 +283,16 @@ function Studio() {
             {job?.status === "failed" && (
               <p className="mt-3 text-sm text-destructive">{job.error ?? STATUS_COPY.failed}</p>
             )}
+            {(job?.finalPrompt || settings.prompt.trim()) && (
+              <details className="mt-4 rounded-lg border border-border/60 p-3">
+                <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
+                  Prompt sent to the engine
+                </summary>
+                <p className="mt-2 whitespace-pre-wrap text-xs text-muted-foreground">
+                  {job?.finalPrompt ?? previewPrompt}
+                </p>
+              </details>
+            )}
           </section>
 
           <section className="glass space-y-4 rounded-2xl p-5">
