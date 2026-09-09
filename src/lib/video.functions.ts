@@ -192,18 +192,18 @@ export const createGeneration = createServerFn({ method: "POST" })
           provider: provider.id,
           provider_job_id: job.jobId,
           status: "processing",
-          credits: estimateCredits({
-            duration: data.duration,
-            resolution: data.resolution,
-            modelTier: data.modelTier,
-          } as VideoSettings),
+          credits: cost,
         })
         .select("id")
         .single();
 
-      if (error) throw new Error("Your video started but couldn't be saved. Please try again.");
-      return { id: row.id as string };
+      if (error) {
+        await refund();
+        throw new Error("Your video started but couldn't be saved. Please try again.");
+      }
+      return { id: row.id as string, creditsRemaining: claim.credits_remaining };
     } catch (err) {
+      await refund();
       if (err instanceof ProviderError) throw new Error(err.message);
       throw err;
     }
