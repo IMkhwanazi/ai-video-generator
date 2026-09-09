@@ -214,10 +214,20 @@ function Studio() {
     <div className="min-h-screen">
       <SiteHeader />
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-        <h1 className="text-3xl font-extrabold">AI Video Studio</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Describe a scene, tune the look, then generate.
-        </p>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h1 className="text-3xl font-extrabold">AI Video Studio</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Describe a scene, tune the look, then generate.
+            </p>
+          </div>
+          <div className="glass rounded-xl px-4 py-2 text-right">
+            <p className="text-sm font-semibold text-primary">
+              {balance ?? DAILY_FREE_CREDITS} / {DAILY_FREE_CREDITS} free credits today
+            </p>
+            <p className="text-xs text-muted-foreground">Refills every day at midnight UTC</p>
+          </div>
+        </div>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_1.4fr_1fr]">
           <section className="glass rounded-2xl p-5">
