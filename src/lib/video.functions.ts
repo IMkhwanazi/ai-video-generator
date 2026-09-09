@@ -112,6 +112,30 @@ export const createGeneration = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const provider = getVideoProvider();
 
+    // Daily free allowance: reserve the credits before doing any work.
+    const cost = estimateCredits({
+      duration: data.duration,
+      resolution: data.resolution,
+      modelTier: data.modelTier,
+    } as VideoSettings);
+    const { data: claimRows, error: claimError } = await supabaseAdmin.rpc("claim_credits", {
+      _device_id: data.deviceId,
+      _cost: cost,
+    });
+    if (claimError) throw new Error("Couldn't check your daily credits. Please try again.");
+    const claim = Array.isArray(claimRows) ? claimRows[0] : claimRows;
+    if (!claim?.allowed) {
+      throw new Error(
+        `This video needs ${cost} credits and you have ${claim?.credits_remaining ?? 0} left today. Your ${claim?.daily_allowance ?? 100} free credits reset at midnight UTC — try a shorter video or a lower resolution.`,
+      );
+    }
+    let refunded = false;
+    const refund = async () => {
+      if (refunded) return;
+      refunded = true;
+      await supabaseAdmin.rpc("refund_credits", { _device_id: data.deviceId, _amount: cost });
+    };
+
     // Very long descriptions/scripts are compressed without losing concrete detail.
     let promptForModel = data.prompt;
     if (promptForModel.length > 4000) {
@@ -171,18 +195,18 @@ export const createGeneration = createServerFn({ method: "POST" })
           provider: provider.id,
           provider_job_id: job.jobId,
           status: "processing",
-          credits: estimateCredits({
-            duration: data.duration,
-            resolution: data.resolution,
-            modelTier: data.modelTier,
-          } as VideoSettings),
+          credits: cost,
         })
         .select("id")
         .single();
 
-      if (error) throw new Error("Your video started but couldn't be saved. Please try again.");
-      return { id: row.id as string };
+      if (error) {
+        await refund();
+        throw new Error("Your video started but couldn't be saved. Please try again.");
+      }
+      return { id: row.id as string, creditsRemaining: claim.credits_remaining };
     } catch (err) {
+      await refund();
       if (err instanceof ProviderError) throw new Error(err.message);
       throw err;
     }

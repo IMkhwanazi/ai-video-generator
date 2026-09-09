@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { DAILY_FREE_CREDITS, getCreditBalance } from "@/lib/credits.functions";
 import {
   createGeneration,
   enhancePrompt,
@@ -83,11 +84,20 @@ function Studio() {
   const [preEnhance, setPreEnhance] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [job, setJob] = useState<GenerationView | null>(null);
+  const [balance, setBalance] = useState<number | null>(null);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const runEnhance = useServerFn(enhancePrompt);
   const runCreate = useServerFn(createGeneration);
   const runGet = useServerFn(getGeneration);
+  const runBalance = useServerFn(getCreditBalance);
+
+  useEffect(() => {
+    if (!deviceId) return;
+    runBalance({ data: { deviceId } })
+      .then((r) => setBalance(r.remaining))
+      .catch(() => setBalance(null));
+  }, [deviceId, runBalance]);
 
   useEffect(() => {
     if (!template) return;
@@ -183,24 +193,41 @@ function Studio() {
         },
       });
       toast.success("Generation started");
+      setBalance(res.creditsRemaining);
       poll(res.id);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Generation couldn't start.");
+      if (deviceId) {
+        runBalance({ data: { deviceId } })
+          .then((r) => setBalance(r.remaining))
+          .catch(() => undefined);
+      }
     } finally {
       setSubmitting(false);
     }
   }
 
   const busy = submitting || (job !== null && job.status !== "completed" && job.status !== "failed");
+  const outOfCredits = balance !== null && credits > balance;
 
   return (
     <div className="min-h-screen">
       <SiteHeader />
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-        <h1 className="text-3xl font-extrabold">AI Video Studio</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Describe a scene, tune the look, then generate.
-        </p>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h1 className="text-3xl font-extrabold">AI Video Studio</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Describe a scene, tune the look, then generate.
+            </p>
+          </div>
+          <div className="glass rounded-xl px-4 py-2 text-right">
+            <p className="text-sm font-semibold text-primary">
+              {balance ?? DAILY_FREE_CREDITS} / {DAILY_FREE_CREDITS} free credits today
+            </p>
+            <p className="text-xs text-muted-foreground">Refills every day at midnight UTC</p>
+          </div>
+        </div>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_1.4fr_1fr]">
           <section className="glass rounded-2xl p-5">
@@ -273,7 +300,11 @@ function Studio() {
             </div>
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
-              <Button onClick={onGenerate} disabled={busy || !deviceId} size="lg">
+              <Button
+                onClick={onGenerate}
+                disabled={busy || !deviceId || outOfCredits}
+                size="lg"
+              >
                 {busy ? <Loader2 className="mr-1 size-4 animate-spin" /> : null}
                 Generate video
               </Button>
@@ -286,6 +317,13 @@ function Studio() {
                 </Button>
               )}
             </div>
+            {outOfCredits && (
+              <p className="mt-3 text-sm text-destructive">
+                This video needs {credits} credits and you have {balance} left today. Your{" "}
+                {DAILY_FREE_CREDITS} free credits reset at midnight UTC — try a shorter video or a
+                lower resolution.
+              </p>
+            )}
             {job?.status === "failed" && (
               <p className="mt-3 text-sm text-destructive">{job.error ?? STATUS_COPY.failed}</p>
             )}
