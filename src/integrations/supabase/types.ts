@@ -14,30 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      credit_wallets: {
-        Row: {
-          created_at: string
-          credits_remaining: number
-          device_id: string
-          period_date: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          credits_remaining?: number
-          device_id: string
-          period_date?: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          credits_remaining?: number
-          device_id?: string
-          period_date?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       generations: {
         Row: {
           aspect_ratio: string
@@ -48,7 +24,6 @@ export type Database = {
           duration: number
           enhanced_prompt: string | null
           error_message: string | null
-          final_prompt: string | null
           id: string
           lighting: string | null
           mode: string
@@ -73,7 +48,6 @@ export type Database = {
           duration?: number
           enhanced_prompt?: string | null
           error_message?: string | null
-          final_prompt?: string | null
           id?: string
           lighting?: string | null
           mode?: string
@@ -98,7 +72,6 @@ export type Database = {
           duration?: number
           enhanced_prompt?: string | null
           error_message?: string | null
-          final_prompt?: string | null
           id?: string
           lighting?: string | null
           mode?: string
@@ -121,18 +94,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      claim_credits: {
-        Args: { _cost: number; _device_id: string }
-        Returns: {
-          allowed: boolean
-          credits_remaining: number
-          daily_allowance: number
-        }[]
-      }
-      refund_credits: {
-        Args: { _amount: number; _device_id: string }
-        Returns: undefined
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never

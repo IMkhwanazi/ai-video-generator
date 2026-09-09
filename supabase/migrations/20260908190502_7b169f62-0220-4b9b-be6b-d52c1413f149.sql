@@ -1,1 +1,0 @@
-ALTER TABLE public.generations ADD COLUMN IF NOT EXISTS final_prompt text;
