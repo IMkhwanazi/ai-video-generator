@@ -300,7 +300,11 @@ function Studio() {
             </div>
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
-              <Button onClick={onGenerate} disabled={busy || !deviceId} size="lg">
+              <Button
+                onClick={onGenerate}
+                disabled={busy || !deviceId || outOfCredits}
+                size="lg"
+              >
                 {busy ? <Loader2 className="mr-1 size-4 animate-spin" /> : null}
                 Generate video
               </Button>
