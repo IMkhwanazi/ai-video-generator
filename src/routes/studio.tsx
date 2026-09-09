@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { DAILY_FREE_CREDITS, getCreditBalance } from "@/lib/credits.functions";
 import {
   createGeneration,
   enhancePrompt,
