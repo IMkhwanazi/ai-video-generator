@@ -193,15 +193,22 @@ function Studio() {
         },
       });
       toast.success("Generation started");
+      setBalance(res.creditsRemaining);
       poll(res.id);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Generation couldn't start.");
+      if (deviceId) {
+        runBalance({ data: { deviceId } })
+          .then((r) => setBalance(r.remaining))
+          .catch(() => undefined);
+      }
     } finally {
       setSubmitting(false);
     }
   }
 
   const busy = submitting || (job !== null && job.status !== "completed" && job.status !== "failed");
+  const outOfCredits = balance !== null && credits > balance;
 
   return (
     <div className="min-h-screen">
