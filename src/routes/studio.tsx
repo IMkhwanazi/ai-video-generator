@@ -317,6 +317,13 @@ function Studio() {
                 </Button>
               )}
             </div>
+            {outOfCredits && (
+              <p className="mt-3 text-sm text-destructive">
+                This video needs {credits} credits and you have {balance} left today. Your{" "}
+                {DAILY_FREE_CREDITS} free credits reset at midnight UTC — try a shorter video or a
+                lower resolution.
+              </p>
+            )}
             {job?.status === "failed" && (
               <p className="mt-3 text-sm text-destructive">{job.error ?? STATUS_COPY.failed}</p>
             )}
