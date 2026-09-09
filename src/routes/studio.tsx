@@ -107,6 +107,12 @@ function Studio() {
   useEffect(() => () => void (timer.current && clearInterval(timer.current)), []);
 
   const credits = useMemo(() => estimateCredits(settings), [settings]);
+  const previewPrompt = useMemo(() => {
+    const base = settings.prompt.trim();
+    if (!base) return "";
+    const tail = `Visual style: ${settings.style}. Camera: ${settings.camera}. Lighting: ${settings.lighting}.`;
+    return base.endsWith(".") ? `${base} ${tail}` : `${base}. ${tail}`;
+  }, [settings.prompt, settings.style, settings.camera, settings.lighting]);
   const set = <K extends keyof VideoSettings>(key: K, value: VideoSettings[K]) =>
     setSettings((s) => ({ ...s, [key]: value }));
 
