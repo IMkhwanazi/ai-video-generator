@@ -84,11 +84,20 @@ function Studio() {
   const [preEnhance, setPreEnhance] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [job, setJob] = useState<GenerationView | null>(null);
+  const [balance, setBalance] = useState<number | null>(null);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const runEnhance = useServerFn(enhancePrompt);
   const runCreate = useServerFn(createGeneration);
   const runGet = useServerFn(getGeneration);
+  const runBalance = useServerFn(getCreditBalance);
+
+  useEffect(() => {
+    if (!deviceId) return;
+    runBalance({ data: { deviceId } })
+      .then((r) => setBalance(r.remaining))
+      .catch(() => setBalance(null));
+  }, [deviceId, runBalance]);
 
   useEffect(() => {
     if (!template) return;
