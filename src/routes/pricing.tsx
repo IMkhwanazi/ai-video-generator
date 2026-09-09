@@ -29,7 +29,7 @@ const PLANS = [
   {
     name: "Free",
     price: "R0",
-    credits: "100 credits / month",
+    credits: "100 free credits every day",
     features: ["720p videos", "Up to 10 seconds", "Templates library", "Watermarked exports"],
   },
   {
