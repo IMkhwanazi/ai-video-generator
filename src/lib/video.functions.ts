@@ -129,7 +129,10 @@ export const createGeneration = createServerFn({ method: "POST" })
         `This video needs ${cost} credits and you have ${claim?.credits_remaining ?? 0} left today. Your ${claim?.daily_allowance ?? 100} free credits reset at midnight UTC — try a shorter video or a lower resolution.`,
       );
     }
+    let refunded = false;
     const refund = async () => {
+      if (refunded) return;
+      refunded = true;
       await supabaseAdmin.rpc("refund_credits", { _device_id: data.deviceId, _amount: cost });
     };
 
