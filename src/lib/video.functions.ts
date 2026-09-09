@@ -112,6 +112,27 @@ export const createGeneration = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const provider = getVideoProvider();
 
+    // Daily free allowance: reserve the credits before doing any work.
+    const cost = estimateCredits({
+      duration: data.duration,
+      resolution: data.resolution,
+      modelTier: data.modelTier,
+    } as VideoSettings);
+    const { data: claimRows, error: claimError } = await supabaseAdmin.rpc("claim_credits", {
+      _device_id: data.deviceId,
+      _cost: cost,
+    });
+    if (claimError) throw new Error("Couldn't check your daily credits. Please try again.");
+    const claim = Array.isArray(claimRows) ? claimRows[0] : claimRows;
+    if (!claim?.allowed) {
+      throw new Error(
+        `This video needs ${cost} credits and you have ${claim?.credits_remaining ?? 0} left today. Your ${claim?.daily_allowance ?? 100} free credits reset at midnight UTC — try a shorter video or a lower resolution.`,
+      );
+    }
+    const refund = async () => {
+      await supabaseAdmin.rpc("refund_credits", { _device_id: data.deviceId, _amount: cost });
+    };
+
     // Very long descriptions/scripts are compressed without losing concrete detail.
     let promptForModel = data.prompt;
     if (promptForModel.length > 4000) {
