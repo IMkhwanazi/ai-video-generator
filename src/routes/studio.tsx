@@ -38,6 +38,7 @@ import {
 } from "@/lib/videonova";
 
 export const Route = createFileRoute("/studio")({
+  staticData: { sitemap: true },
   validateSearch: (search: Record<string, unknown>): { template?: string } => {
     const t = search["template"];
     return typeof t === "string" ? { template: t } : {};
@@ -56,8 +57,10 @@ export const Route = createFileRoute("/studio")({
         content: "Prompt, style, camera and lighting controls for real AI video generation.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://render-craft-co.lovable.app/studio" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://render-craft-co.lovable.app/studio" }],
   }),
   component: Studio,
 });

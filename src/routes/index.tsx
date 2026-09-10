@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { TEMPLATES } from "@/lib/videonova";
 
 export const Route = createFileRoute("/")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "VIDEONOVA AI — Turn Your Ideas Into Stunning AI Videos" },
@@ -31,8 +32,10 @@ export const Route = createFileRoute("/")({
           "Describe it. Generate it. Make it yours. Cinematic AI video generation from prompts and images.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://render-craft-co.lovable.app/" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://render-craft-co.lovable.app/" }],
   }),
   component: Landing,
 });

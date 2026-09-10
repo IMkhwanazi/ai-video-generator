@@ -5,6 +5,7 @@ import { SiteFooter, SiteHeader } from "@/components/site/SiteChrome";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/pricing")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "Pricing — VIDEONOVA AI" },
@@ -19,7 +20,31 @@ export const Route = createFileRoute("/pricing")({
         content: "Free, Creator, Pro and Studio credit plans for AI video generation.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://render-craft-co.lovable.app/pricing" },
       { name: "twitter:card", content: "summary_large_image" },
+    ],
+    links: [{ rel: "canonical", href: "https://render-craft-co.lovable.app/pricing" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": PLANS.map((p) => ({
+            "@type": "Product",
+            name: `VIDEONOVA AI ${p.name}`,
+            description: `${p.credits}. ${p.features.join(", ")}.`,
+            brand: { "@type": "Brand", name: "VIDEONOVA AI" },
+            url: "https://render-craft-co.lovable.app/pricing",
+            offers: {
+              "@type": "Offer",
+              price: p.price.replace(/[^0-9.]/g, ""),
+              priceCurrency: "ZAR",
+              availability: "https://schema.org/InStock",
+              url: "https://render-craft-co.lovable.app/pricing",
+            },
+          })),
+        }),
+      },
     ],
   }),
   component: Pricing,
