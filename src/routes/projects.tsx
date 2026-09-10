@@ -9,6 +9,7 @@ import { listGenerations } from "@/lib/video.functions";
 import { STATUS_COPY, type GenerationStatus } from "@/lib/videonova";
 
 export const Route = createFileRoute("/projects")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "Your Projects — VIDEONOVA AI" },
@@ -22,8 +23,10 @@ export const Route = createFileRoute("/projects")({
         content: "Watch, download and revisit the AI videos you've generated.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://render-craft-co.lovable.app/projects" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://render-craft-co.lovable.app/projects" }],
   }),
   component: Projects,
 });

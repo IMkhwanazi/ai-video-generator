@@ -4,6 +4,7 @@ import { SiteFooter, SiteHeader } from "@/components/site/SiteChrome";
 import { TEMPLATES } from "@/lib/videonova";
 
 export const Route = createFileRoute("/templates")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "Video Templates — VIDEONOVA AI" },
@@ -18,8 +19,10 @@ export const Route = createFileRoute("/templates")({
         content: "Start from a proven prompt and generate your video in seconds.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://render-craft-co.lovable.app/templates" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://render-craft-co.lovable.app/templates" }],
   }),
   component: Templates,
 });
