@@ -74,18 +74,26 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "VIDEONOVA AI — AI Video Generation Studio" },
+      {
+        name: "description",
+        content:
+          "VIDEONOVA AI turns prompts, scripts and images into cinematic, social-ready videos in minutes.",
+      },
+      { property: "og:site_name", content: "VIDEONOVA AI" },
+      { property: "og:title", content: "VIDEONOVA AI — AI Video Generation Studio" },
+      {
+        property: "og:description",
+        content:
+          "Generate cinematic AI videos from prompts, scripts and images with the VIDEONOVA AI studio.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
